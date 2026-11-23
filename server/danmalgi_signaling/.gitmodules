@@ -1,0 +1,6 @@
+[submodule "proto/private"]
+	path = proto/private
+	url = https://github.com/danmalgi-project/danmalgi_internal_proto.git
+[submodule "proto/public"]
+	path = proto/public
+	url = https://github.com/danmalgi-project/danmalgi_proto.git

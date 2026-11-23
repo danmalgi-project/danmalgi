@@ -1,0 +1,121 @@
+syntax = "proto3";
+
+package signaling.v1;
+
+option go_package = "github.com/danmalgi-project/danmalgi-webrtc-server/pkg/gen/external/signaling/v1;signalingv1";
+
+import "google/protobuf/timestamp.proto";
+import "user/v1/user.proto";
+// import "google/protobuf/empty.proto";
+
+// WebRTC 연결을 설정하기 위한 시그널링 기능을 제공합니다.
+// WebrtcService provides signaling capabilities for establishing WebRTC connections.
+service SignalingService {
+    // 피어 간에 WebRTC 시그널링 메시지 (offer, answer, candidate)를 교환하기 위한 양방향 스트림을 설정합니다.
+    // Signaling establishes a bidirectional stream for exchanging WebRTC signaling messages
+    // (offers, answers, candidates) between peers.
+    rpc Signaling(stream SignalingRequest) returns(stream SignalingResponse);
+
+    // 채널 통화방의 통화 시작 시각을 반환합니다. (첫 참가자가 입장한 시각)
+    // 클라이언트가 now - started_at 으로 통화 경과 시간을 계산하는 용도입니다.
+    rpc GetChannelCallStartedAt(GetChannelCallStartedAtRequest) returns(GetChannelCallStartedAtResponse);
+}
+
+// 채널 통화방 시작 시각 조회 요청
+message GetChannelCallStartedAtRequest {
+  // 채널 ID
+  int64 channel_id = 1;
+}
+
+// 채널 통화방 시작 시각 조회 응답
+message GetChannelCallStartedAtResponse {
+  // 통화 시작 시각. 통화 중이 아니면(참가자 0명) 값이 없습니다.
+  optional google.protobuf.Timestamp started_at = 1;
+}
+
+// 시그널링 요청
+// Signaling
+message SignalingRequest {
+    SignalingRequestInfo signaling_request_info = 1;
+}
+
+// 시그널링 응답
+message SignalingResponse {
+    SignalingResponseInfo signaling_response_info = 1;
+}
+
+// 시그널링 요청 정보
+message SignalingRequestInfo {
+  oneof message {
+      // answer 메시지
+      Answer     answer      = 1;
+      // candidate 메시지
+      Candidate  candidate   = 2;
+  }
+}
+
+// 시그널링 응답 정보
+message SignalingResponseInfo {
+    oneof message {
+        // offer 메시지
+        Offer      offer       = 1;
+        // answer 메시지
+        Answer     answer      = 2;
+        // candidate 메시지
+        Candidate  candidate   = 3;
+    }
+}
+
+// offer 메시지
+message Offer {
+  SessionDescription sdp = 1;
+  // 참여 사용자 트랙 정보
+  optional UserTracks joined_user_tracks = 2;
+}
+
+// answer 메시지
+message Answer {
+  SessionDescription sdp = 1;
+}
+
+message SessionDescription {
+  string sdp_type = 1;
+  string sdp_data = 2;
+}
+
+// candidate 메시지
+message Candidate {
+  string candidate       = 1;
+  string sdp_mid         = 2;
+  int32  sdp_mline_index = 3;
+}
+
+// 사용자 트랙 목록
+message UserTracks {
+  repeated UserTrack user_tracks = 1;
+}
+
+// 사용자 트랙 정보
+message UserTrack {
+  // int64     user_id    = 1;
+  // 사용자 정보
+  user.v1.User      user       = 1;
+  // 트랙 ID
+  string    track_id   = 2;
+  // 트랙 타입
+  TrackType track_type = 3;
+}
+
+// 트랙 타입 열거형
+enum TrackType {
+  // 오디오 트랙
+  AUDIO        = 0;
+  // 카메라 오디오 트랙
+  CAM_AUDIO    = 1;
+  // 카메라 비디오 트랙
+  CAM_VIDEO    = 2;
+  // 화면 공유 오디오 트랙
+  SCREEN_AUDIO = 3;
+  // 화면 공유 비디오 트랙
+  SCREEN_VIDEO = 4;
+}

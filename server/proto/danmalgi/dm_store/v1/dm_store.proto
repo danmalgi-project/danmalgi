@@ -1,0 +1,25 @@
+syntax = "proto3";
+
+package dm_store.v1;
+
+option go_package = "github.com/danmalgi-project/danmalgi-chat-server/pkg/gen/private/dm_store/v1;dm_storev1";
+option java_package = "com.danmalgi.backend.internal.dm_store.v1";
+option java_outer_classname = "DmStoreProto";
+
+service DmStoreService {
+    rpc GetChannelNames(GetChannelNamesRequest) returns(GetChannelNamesResponse);
+}
+
+message GetChannelNamesRequest {
+    int64          channel_id = 1;
+    repeated int64 user_ids   = 2;
+}
+
+message GetChannelNamesResponse {
+    repeated ChannelName channel_names = 1;
+}
+
+message ChannelName {
+    int64  user_id      = 1;
+    string channel_name = 2;
+}

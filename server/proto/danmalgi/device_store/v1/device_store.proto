@@ -1,0 +1,34 @@
+syntax = "proto3";
+
+package device_store.v1;
+
+option go_package = "github.com/danmalgi-project/danmalgi-chat-server/pkg/gen/private/device_store/v1;device_storev1";
+option java_package = "com.danmalgi.backend.internal.device_store.v1";
+option java_outer_classname = "DeviceStoreProto";
+
+service DeviceStoreService {
+  rpc GetChannelDevices(GetChannelDevicesRequest) returns(GetChannelDevicesResponse);
+  rpc GetDevices(GetDevicesRequest) returns(GetDevicesResponse);
+}
+
+message GetDevicesRequest {
+  repeated string device_ids = 1;
+}
+
+message GetDevicesResponse {
+  repeated Device devices = 1;
+}
+
+message GetChannelDevicesRequest {
+  int64 channel_id = 1;
+}
+
+message GetChannelDevicesResponse {
+  repeated Device devices = 1;
+}
+
+message Device {
+  int64  user_id   = 1;
+  string device_id = 2;
+  string fcm_token = 3;
+}

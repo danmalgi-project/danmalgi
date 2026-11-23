@@ -1,0 +1,87 @@
+syntax = "proto3";
+
+package user.v1;
+
+option java_package = "com.danmalgi.backend.external.user.v1";
+option java_outer_classname = "UserProto";
+
+import "google/protobuf/empty.proto";
+
+// UserService provides services for managing user accounts.
+service UserService {
+  // GetUserByToken retrieves user information based on the authentication token.
+  rpc GetUserByToken(google.protobuf.Empty) returns(GetUserByTokenResponse);
+  // VerifyNameAndTag checks if a combination of user name and tag is available.
+  rpc VerifyNameAndTag(VerifyNameAndTagRequest) returns(google.protobuf.Empty);
+  // rpc ChangeUserTag() returns();
+  rpc UploadProfile(UploadProfileRequest) returns(UploadProfileResponse);
+  // SearchUser looks up users by exact name+tag match.
+  // 지금은 완전 일치라 결과가 0건 또는 1건이지만, 이름만으로 찾는 확장을 염두에 두고
+  // 응답은 처음부터 list 로 둔다. 없으면 빈 list 다.
+  rpc SearchUser(SearchUserRequest) returns(SearchUserResponse);
+}
+
+// GetUserByToken
+message GetUserByTokenResponse {
+  User user = 1;
+}
+
+// VerifyNameAndTag
+message VerifyNameAndTagRequest {
+  string name = 1;
+  string tag = 2;
+}
+
+// UploadProfile
+message UploadProfileRequest {
+  bytes image = 1;
+  string extension = 2;
+}
+
+message UploadProfileResponse {
+  User user = 1;
+}
+
+// SearchUser
+message SearchUserRequest {
+  string name = 1;
+  string tag  = 2;
+}
+
+message SearchUserResponse {
+  repeated SearchedUser users = 1;
+}
+
+// 타인에게 보여주는 공개 프로필. email 같은 개인정보를 담지 않으려고 User 와 분리했다.
+message SearchedUser {
+  int64  id                = 1;
+  string name              = 2;
+  string tag               = 3;
+  string profile_image_url = 4;
+}
+
+message User {
+  // An account may link several OAuth providers; the server keeps them internally.
+  reserved 5;
+  reserved "oauth_type";
+
+  int64      id                = 1;
+  string     email             = 2;
+  string     name              = 3;
+  string     tag               = 4;
+  UserStatus status            = 6;
+  string     profile_image_url = 7;
+}
+
+enum UserStatus {
+  USER_PENDING    = 0; // 가입 미완료
+  USER_ACTIVE     = 1; // 가입 완료
+  USER_BLOCKED    = 2; // 차단
+  USER_WITHDRAWAL = 3; // 탈퇴
+}
+
+// Used only by auth.v1.AuthorizationRequest.oauth_type.
+enum OauthType {
+  GOOGLE = 0;
+  APPLE = 1;
+}

@@ -1,0 +1,14 @@
+logs/**
+
+# 실제 시크릿이 담긴 로컬 환경변수 파일 (예시는 .env.example로 커밋한다)
+.env
+.env.local
+
+# tools/webrtc-adapter: 로컬 재발급되는 self-signed 인증서/개인키
+tools/webrtc-adapter/*.key
+tools/webrtc-adapter/*.crt
+tools/webrtc-adapter/*.csr
+tools/webrtc-adapter/*.pem
+
+# 하네스 워크플로우 사이클 산출물 (교훈은 CLAUDE.md에 축적됨)
+.claude/workflow/

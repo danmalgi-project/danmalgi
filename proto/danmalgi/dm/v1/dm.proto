@@ -1,0 +1,105 @@
+syntax = "proto3";
+
+package dm.v1;
+
+option java_package = "com.danmalgi.backend.external.dm.v1";
+option java_outer_classname = "DirectMessageProto";
+
+import "google/protobuf/empty.proto";
+import "google/protobuf/timestamp.proto";
+import "user/v1/user.proto";
+
+// DirectMessageService provides services for managing direct message channels.
+service DirectMessageService {
+    // GetDirectMessageChannelList retrieves the list of direct message channels for the user.
+    rpc GetDirectMessageChannelList(google.protobuf.Empty) returns(GetDirectMessageChannelListResponse);
+    // GetDirectMessageChannel retrieves a single direct message channel the caller belongs to.
+    rpc GetDirectMessageChannel(GetDirectMessageChannelRequest) returns(GetDirectMessageChannelResponse);
+    // CreateDirectMessageChannel creates a new direct message channel with specified friends.
+    rpc CreateDirectMessageChannel(CreateDirectMessageChannelRequest) returns(CreateDirectMessageChannelResponse);
+    // UploadChannelImage uploads an image for a group channel.
+    rpc UploadChannelImage(UploadChannelImageRequest) returns(UploadChannelImageResponse);
+    // UpdateDirectMessageChannel updates group channel metadata for current members.
+    rpc UpdateDirectMessageChannel(UpdateDirectMessageChannelRequest) returns(UpdateDirectMessageChannelResponse);
+    // LeaveDirectMessageChannel removes only the caller from the channel.
+    rpc LeaveDirectMessageChannel(LeaveDirectMessageChannelRequest) returns(google.protobuf.Empty);
+}
+
+// GetDirectMessageList
+message GetDirectMessageChannelListResponse {
+    repeated DirectMessageChannelListItem items = 1;
+}
+
+// 채널 목록 아이템. last_message 는 목록 응답에서만 제공된다.
+message DirectMessageChannelListItem {
+    DirectMessageChannel channel      = 1;
+    LastMessage          last_message = 2; // 채널의 마지막 메시지 (없으면 unset)
+}
+
+// GetDirectMessageChannel
+// 호출자가 참여 중인 방만 조회된다. 참여하지 않은 방·없는 방은 NOT_FOUND.
+// last_message 는 주지 않는다 — 목록 응답에서만 제공한다.
+message GetDirectMessageChannelRequest {
+    int64 dm_id = 1;
+}
+
+message GetDirectMessageChannelResponse {
+    DirectMessageChannel direct_message_channel = 1;
+}
+
+// CreateDirectMessage
+message CreateDirectMessageChannelRequest {
+    repeated int64 friend_ids = 1; // 친구 아이디
+}
+
+message CreateDirectMessageChannelResponse {
+    DirectMessageChannel direct_message_channel = 1; // 생성된 dm
+}
+
+// UploadChannelImage
+message UploadChannelImageRequest {
+    int64  dm_id     = 1;
+    bytes  image     = 2;
+    string extension = 3;
+}
+
+message UploadChannelImageResponse {
+    DirectMessageChannel direct_message_channel = 1;
+}
+
+// UpdateDirectMessageChannel
+message UpdateDirectMessageChannelRequest {
+    int64  dm_id        = 1;
+    string channel_name = 2;
+    bytes  image        = 3;
+    string extension    = 4;
+}
+
+message UpdateDirectMessageChannelResponse {
+    DirectMessageChannel direct_message_channel = 1;
+}
+
+// LeaveDirectMessageChannel
+message LeaveDirectMessageChannelRequest {
+    int64 dm_id = 1;
+}
+
+// model
+message DirectMessageChannel {
+    int64    dm_id              = 1;
+    repeated user.v1.User users = 2; // 불필요???
+    string   channel_name       = 3;
+    bool     is_group           = 4;
+    string   channel_image_url  = 5;
+
+    reserved 6; // last_message 는 DirectMessageChannelListItem 로 이동
+    reserved "last_message";
+}
+
+// 채널의 마지막 메시지. 메시지는 chat-server 소유이며 백엔드가 배치 조회해 채운다.
+message LastMessage {
+    int64                     message_id = 1;
+    string                    content    = 2;
+    int64                     sender_id  = 3;
+    google.protobuf.Timestamp created_at = 4;
+}

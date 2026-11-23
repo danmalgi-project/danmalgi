@@ -1,0 +1,50 @@
+syntax = "proto3";
+
+package friend.v1;
+
+option java_package = "com.danmalgi.backend.external.friend.v1";
+option java_outer_classname = "FriendProto";
+
+import "google/protobuf/empty.proto";
+import "user/v1/user.proto";
+
+// FriendService provides services for managing user's friends.
+service FriendService {
+    // GetFriendList retrieves the user's friend list.
+    rpc GetFriendList(google.protobuf.Empty) returns(GetFriendListResponse);
+    // UpdateFriendStatus changes the status of a friend (e.g., block, unfriend).
+    rpc UpdateFriendStatus(UpdateFriendStatusRequest) returns(UpdateFriendStatusResponse);
+}
+
+
+// Request, Resposne Messages
+// GetFriendList
+message GetFriendListResponse {
+    repeated Friend friends = 1;
+}
+
+// UpdateFriendStatus
+message UpdateFriendStatusRequest {
+    int64        friendship_id = 1;
+    FriendStatus friend_status = 2; // 변경할 상태 값
+}
+
+message UpdateFriendStatusResponse {
+    repeated Friend friends = 1;
+}
+
+
+// Resource Messages
+message Friend {
+    int64        id     = 1;
+    user.v1.User user   = 2;
+    FriendStatus status = 3;
+}
+
+
+// Enum
+enum FriendStatus {
+    ACCEPT = 0; // 수락
+    BLOCK  = 1; // 차단
+    DELETE = 2; // 삭제
+}

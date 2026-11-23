@@ -1,0 +1,32 @@
+syntax = "proto3";
+
+package user_store.v1;
+
+option go_package = "github.com/danmalgi-project/danmalgi-chat-server/pkg/gen/private/user_store/v1;user_storev1";
+option java_package = "com.danmalgi.backend.internal.user_store.v1";
+option java_outer_classname = "UserStoreProto";
+
+service UserStoreService {
+    rpc GetUsers(GetUsersRequest) returns(GetUsersResponse);
+}
+
+message GetUsersRequest {
+    repeated int64 user_ids = 1;
+}
+
+message GetUsersResponse {
+    repeated User users = 1;
+}
+
+message User {
+    // OAuth 제공자 정보는 api 내부(user_oauth_identities)로 옮겼다. 한 유저가 여러 제공자를 가질 수 있다.
+    reserved 5;
+    reserved "oauth_type";
+
+    int64      id                = 1;
+    string     email             = 2;
+    string     name              = 3;
+    string     tag               = 4;
+    int32      status            = 6;
+    string     profile_image_url = 7;
+}

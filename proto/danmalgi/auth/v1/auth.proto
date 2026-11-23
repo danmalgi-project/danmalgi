@@ -1,0 +1,60 @@
+syntax = "proto3";
+
+package auth.v1;
+
+option java_package = "com.danmalgi.backend.external.auth.v1";
+option java_outer_classname = "AuthProto";
+
+import "user/v1/user.proto";
+import "google/protobuf/empty.proto";
+//import "option.proto";
+
+// AuthService provides services for user authentication and registration.
+service AuthService {
+  // Authorization handles user login via OAuth.
+  // It returns whether the user is new, user information, and an access token.
+  rpc Authorization(AuthorizationRequest) returns(AuthorizationResponse);
+//  {
+//    option (non_require_auth) = true;
+//  };
+  // Register completes the registration for a new user.
+  rpc Register(RegisterRequest) returns(RegisterResponse);
+  // Upserts (creates or updates) a user's FCM token.
+  rpc UpsertFcmToken(UpsertFcmTokenRequest) returns(google.protobuf.Empty);
+}
+
+// Authorization
+message AuthorizationRequest {
+  string    id_token   = 1;
+  string    device_id  = 2;
+  user.v1.OauthType oauth_type = 3;
+  // Apple only. Authorization code issued with the id_token. Leave empty for Google.
+  string    authorization_code = 4;
+  // Apple only. Original nonce before hashing; the client passes sha256(raw_nonce)
+  // (lowercase hex) to Apple and sends this raw value here. Leave empty for Google.
+  string    raw_nonce = 5;
+}
+
+message AuthorizationResponse {
+  user.v1.User   user         = 1;
+  string access_token = 2;
+}
+
+// Register
+message RegisterRequest {
+  string nickname = 1;
+  string tag      = 2;
+}
+
+message RegisterResponse {
+  user.v1.User user = 1;
+  // Access token reissued for the newly created user.
+  // The token used to call Register only identifies a pending registration
+  // session, so the client must replace it with this one.
+  string access_token = 2;
+}
+
+// UpsertFcmToken
+message UpsertFcmTokenRequest {
+  string fcm_token = 1;
+}
